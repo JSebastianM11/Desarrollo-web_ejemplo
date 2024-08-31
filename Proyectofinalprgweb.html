@@ -1,0 +1,273 @@
+<head>
+    <title>Proyecto final ACA</title>
+    <style>
+  body {
+    font-family: Georgia, serif;
+    margin: 0;
+    padding: 0;
+  }
+  header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    text-align: center;
+  }
+  footer {
+    background-color: #555353;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+  }
+  nav {
+    background-color: #555353;
+    color: #fff;
+    padding: 10px;
+    text-align: center;
+    }
+  div {
+    background-color: #7e7a7a;
+    color: #fff;
+    padding: 10px;
+    text-align: start;
+  }
+  table {
+  width: 50%;
+  border-collapse: collapse;
+  margin: 15px 0;
+  font-size: 15px;
+  text-align: center;
+}
+th, td {
+  padding: 12px;
+  border: 1px solid #000000;
+}
+
+th {
+  background-color: #c2bebe;
+  font-weight: bold;
+}
+td {
+  background-color: #f1ebeb;
+}
+    </style>
+</head>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.8/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<header>
+  <h1>Proyecto final ACA</h1>
+</header>
+
+<nav>
+<form>
+  <label for="codigo">Código:</label>
+  <input type="text" id="codigo" name="codigo"><br><br>
+  <label for="nombre">Nombre:</label>
+  <input type="text" id="nombre" name="nombre"><br><br>
+  <label for="apellido">Apellido:</label>
+  <input type="text" id="apellido" name="apellido"><br><br>
+  <label for="fecha">fecha:</label>
+  <input type="date" id="fecha" name="fecha"><br><br>
+  <label for="correo">correo:</label>
+  <input type="email" id="correo" name="correo" placeholder="example@dominio.com" required><br><br>
+  <input type="button" value="Agregar" onclick="agregarDatos()">
+  <input type="button" value="Actualizar" onclick="actualizarDatos()">
+  <input type="button" value="Eliminar" onclick="eliminarDatos()">
+  <input type="button" value="Limpiar" onclick="limpiar()">
+</form>
+</nav>
+<div id="tablaDatos"></div>
+
+
+<div>
+  <label for="buscarCodigo">Buscar Código:</label>
+  <input type="text" id="buscarCodigo">
+  <input type="button" value="Buscar" onclick="buscarCodigo()">
+  <div id="resultadoBusqueda"></div>
+</div>
+
+<div>
+  <label for="cargarArchivo">Cargar Excel:</label>
+  <input type="file" id="cargarArchivo" accept=".xlsx">
+  <input type="button" value="Cargar Datos" onclick="cargarDatosDesdeExcel()">
+  <input type="button" value="Exportar a Excel" onclick="exportToExcel()" id="exportButton">
+</div>
+
+<script>
+let datos = [];
+
+function agregarDatos() {
+  const codigo = document.getElementById("codigo").value;
+  const nombre = document.getElementById("nombre").value;
+  const apellido = document.getElementById("apellido").value;
+  const fecha = document.getElementById("fecha").value;
+  const correo = document.getElementById("correo").value;
+
+  
+  if (codigo === "" || nombre === "" || apellido === "" || fecha === "" || correo === "") {
+        alert("Por favor, complete llene todos los datos antes de enviar el formulario.");
+      } else {
+        if (codigo && nombre && apellido && fecha && correo) {
+    datos.push({ Código: codigo, Nombre: nombre, Apellido: apellido, Fecha: fecha, Correo: correo });
+    document.getElementById("codigo").value = "";
+    document.getElementById("nombre").value = "";
+    document.getElementById("apellido").value = "";
+    document.getElementById("fecha").value = "";
+    document.getElementById("correo").value = "";
+    mostrarDatos();
+  }
+        alert("Datos agregados correctamente.");
+      }
+}
+
+function limpiar()
+{
+document.getElementById("codigo").value="";
+document.getElementById("nombre").value="";
+document.getElementById("apellido").value="";
+document.getElementById("fecha").value="";
+document.getElementById("correo").value="";
+}
+
+function mostrarDatos() {
+  const tabla = document.getElementById("tablaDatos");
+  tabla.innerHTML = "";
+
+  if (datos.length > 0) {
+    const table = document.createElement("table");
+    const headerRow = table.insertRow(0);
+
+    for (const key in datos[0]) {
+      const th = document.createElement("th");
+      th.innerHTML = key;
+      headerRow.appendChild(th);
+    }
+
+    for (let i = 0; i < datos.length; i++) {
+      const row = table.insertRow(i + 1);
+      for (const key in datos[i]) {
+        const cell = row.insertCell();
+        cell.innerHTML = datos[i][key];
+      }
+    }
+
+    tabla.appendChild(table);
+    document.getElementById("exportButton").style.display = "block";
+  } else {
+    document.getElementById("exportButton").style.display = "none";
+  }
+}
+
+function buscarCodigo() {
+  const codigoBuscado = document.getElementById("buscarCodigo").value;
+  const resultadoBusqueda = document.getElementById("resultadoBusqueda");
+  resultadoBusqueda.innerHTML = "";
+
+  if (codigoBuscado) {
+    const resultados = datos.filter((item) => item["Código"] === codigoBuscado);
+
+    if (resultados.length > 0) {
+      const table = document.createElement("table");
+      const headerRow = table.insertRow(0);
+
+      for (const key in resultados[0]) {
+        const th = document.createElement("th");
+        th.innerHTML = key;
+        headerRow.appendChild(th);
+      }
+
+      resultados.forEach((item, index) => {
+        const row = table.insertRow(index + 1);
+        for (const key in item) {
+          const cell = row.insertCell();
+          cell.innerHTML = item[key];
+        }
+      });
+
+      resultadoBusqueda.appendChild(table);
+
+      // Mostrar los datos encontrados en las cajas de texto del formulario
+      document.getElementById("codigo").value = resultados[0]["Código"];
+      document.getElementById("nombre").value = resultados[0]["Nombre"];
+      document.getElementById("apellido").value = resultados[0]["Apellido"];
+      document.getElementById("fecha").value = resultados[0]["Fecha"];
+      document.getElementById("correo").value = resultados[0]["Correo"];
+    } else {
+      resultadoBusqueda.innerHTML = "Código no encontrado.";
+    }
+  }
+}
+
+function actualizarDatos() {
+  const codigo = document.getElementById("codigo").value;
+  const nombre = document.getElementById("nombre").value;
+  const apellido = document.getElementById("apellido").value;
+  const fecha= document.getElementById("fecha").value;
+  const correo = document.getElementById("correo").value;
+
+  if (codigo) {
+    const indice = datos.findIndex((item) => item["Código"] === codigo);
+
+    if (indice !== -1) {
+      datos[indice] = { Código: codigo, Nombre: nombre, Apellido: apellido };
+      mostrarDatos();
+      limpiarFormulario();
+    }
+  }
+}
+
+function eliminarDatos() {
+  const codigo = document.getElementById("codigo").value;
+
+  if (codigo) {
+    const indice = datos.findIndex((item) => item["Código"] === codigo);
+
+    if (indice !== -1) {
+      datos.splice(indice, 1);
+      mostrarDatos();
+      limpiarFormulario();
+    }
+  }
+}
+
+function limpiarFormulario() {
+  document.getElementById("codigo").value = "";
+  document.getElementById("nombre").value = "";
+  document.getElementById("apellido").value = "";
+}
+
+function cargarDatosDesdeExcel() {
+  const fileInput = document.getElementById("cargarArchivo");
+  const file = fileInput.files[0];
+
+  if (file) {
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+      datos = jsonData;
+      mostrarDatos();
+    };
+
+    reader.readAsArrayBuffer(file);
+  }
+}
+
+function exportToExcel() {
+  if (datos.length > 0) {
+    const worksheet = XLSX.utils.json_to_sheet(datos);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
+
+    XLSX.writeFile(workbook, "datos.xlsx");
+  }
+}
+</script>
+<footer>
+  <p>Trabajo realizado por: Johan Sebastian Márquez - © 2024</p>
+</footer>
+
